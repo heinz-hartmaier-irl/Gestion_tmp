@@ -1,0 +1,89 @@
+// app/api/update-solde/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getDBConnection } from "@/lib/db";
+import { cookies } from "next/headers";
+import { RowDataPacket } from "mysql2";
+import { calculateRecoveryHours } from "@/lib/overtimeUtils";
+
+export async function POST(req: NextRequest) {
+  try {
+    const { targetUserId, type, variation, motif, dateAction } = await req.json();
+
+    const cookieStore = await cookies();
+    const actorIdStr = cookieStore.get("userId")?.value;
+    
+    if (!actorIdStr || !targetUserId || !type || variation === undefined) {
+      return NextResponse.json({ error: "Données incomplètes" }, { status: 400 });
+    }
+
+    // Validation stricte H.Sup
+    if (type === 'hsup') {
+        if (!motif || motif.trim() === '') return NextResponse.json({ error: "Motif obligatoire." }, { status: 400 });
+        if (!dateAction) return NextResponse.json({ error: "Date/Heure obligatoire pour le calcul." }, { status: 400 });
+    }
+
+    const actorId = parseInt(actorIdStr, 10);
+    const conn = await getDBConnection();
+
+    try {
+      const [actors] = await conn.query<RowDataPacket[]>("SELECT poste FROM user WHERE id_user = ?", [actorId]);
+      if (!actors.length) return NextResponse.json({ error: "Acteur introuvable" }, { status: 403 });
+      
+      const role = actors[0].poste.toLowerCase();
+      const isAllowed = role === 'admin' || role === 'rh' || actorId === targetUserId;
+
+      if (!isAllowed) return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+
+      await conn.beginTransaction();
+
+      let finalVariation = parseFloat(variation);
+      let dureeReelle = 0;
+
+      // ✅ CALCUL AUTOMATIQUE
+      if (type === 'hsup') {
+          dureeReelle = parseFloat(variation); // L'utilisateur saisit "2h" (réelles)
+          const dateObj = new Date(dateAction);
+          const result = await calculateRecoveryHours(conn, targetUserId, dateObj, dureeReelle);
+          finalVariation = result.toCredit; // On crédite par ex "3h" (si 50%)
+      }
+
+      // Update User
+      const [targets] = await conn.query<RowDataPacket[]>("SELECT solde_conge, solde_hsup FROM user WHERE id_user = ?", [targetUserId]);
+      const currentVal = type === 'conge' ? targets[0].solde_conge : targets[0].solde_hsup;
+      const newVal = parseFloat(currentVal) + finalVariation;
+
+      const colName = type === 'conge' ? 'solde_conge' : 'solde_hsup';
+      await conn.query(`UPDATE user SET ${colName} = ? WHERE id_user = ?`, [newVal, targetUserId]);
+
+      // Insert Historique complet
+      await conn.query(
+        `INSERT INTO historique_solde 
+        (id_user_target, id_user_actor, type_solde, valeur_modif, nouveau_solde, date_modif, motif, date_action, duree_reelle)
+         VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?)`,
+        [
+            targetUserId, 
+            actorId, 
+            type, 
+            finalVariation, 
+            newVal, 
+            type === 'hsup' ? motif : null,
+            type === 'hsup' ? dateAction : null,
+            type === 'hsup' ? dureeReelle : 0
+        ]
+      );
+
+      await conn.commit();
+      return NextResponse.json({ success: true, newVal, added: finalVariation });
+
+    } catch (err: any) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      await conn.end();
+    }
+
+  } catch (error) {
+    console.error("Erreur update-solde:", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
