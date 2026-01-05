@@ -193,7 +193,7 @@ export default function DashboardAdminPage() {
                           <div className="flex justify-between"><span className="text-gray-400">Au</span> <span className="font-bold text-gray-700">{formatDateTime(d.date_fin)}</span></div>
                       </div>
                       {isSpec && d.nature && <div className="text-xs text-[#ff6400] font-bold bg-orange-50 px-3 py-2 rounded-xl border border-orange-100">📌 {d.nature}</div>}
-                      {isHSup && d.motif && <div className="text-xs text-gray-500 italic bg-gray-50 px-3 py-2 rounded-xl">💬 "{d.motif}"</div>}
+                      {isHSup && d.motif && <div className="text-xs text-gray-500 italic bg-gray-50 px-3 py-2 rounded-xl">💬 &quot;{d.motif}&quot;</div>}
                    </div>
                    <div className="mt-auto space-y-2">
                       <div className="flex justify-center mb-2">{getStatusBadge(d.statut_demande)}</div>

@@ -262,7 +262,7 @@ export default function UserSettingPage() {
               <button onClick={()=>openHistory(u)} className="bg-gray-100 text-[#000091] rounded-xl hover:bg-gray-200 transition font-bold text-xs">Historique</button>
               {currentUser?.id_user !== u.id_user && (
                 <button onClick={()=>handleDelete(u.id_user)} className="col-span-2 mt-1 bg-red-50 text-red-500 py-3 rounded-xl font-bold text-xs hover:bg-red-500 hover:text-white transition flex items-center justify-center gap-2 border border-red-100 hover:border-red-500">
-                  🗑️ Supprimer l'utilisateur
+                  🗑️ Supprimer l&apos;utilisateur
                 </button>
               )}
             </div>

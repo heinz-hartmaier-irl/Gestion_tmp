@@ -79,7 +79,7 @@ export default function DashboardUserPage() {
     <div className="min-h-screen px-4 sm:px-8 py-8 bg-[#f4f6fc] font-[poppins]">
       {/* Header inchangé */}
       <div className="max-w-6xl mx-auto mb-10 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div><h1 className="text-4xl sm:text-5xl font-[Modak] text-[#000091] leading-none">Bonjour {user?.prenom} ! <span className="inline-block animate-wave">👋</span></h1><p className="text-gray-400 font-medium ml-1">Voici ce qui se passe aujourd'hui.</p></div>
+        <div><h1 className="text-4xl sm:text-5xl font-[Modak] text-[#000091] leading-none">Bonjour {user?.prenom} ! <span className="inline-block animate-wave">👋</span></h1><p className="text-gray-400 font-medium ml-1">Voici ce qui se passe aujourd&apos;hui.</p></div>
         <button onClick={() => router.push('/demandes')} className="bg-[#ff6400] text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-orange-200 hover:scale-105 hover:bg-[#ff8533] transition-all duration-300 flex items-center gap-2"><span className="text-xl">+</span> Nouvelle Demande</button>
       </div>
 

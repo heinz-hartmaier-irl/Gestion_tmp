@@ -33,7 +33,7 @@ export default function DemandesPage() {
   useEffect(() => { fetch("/api/profil").then(res => res.json()).then(data => { setUser(data.user); setLoading(false); }); }, []);
 
   const updateDateTime = (currentIso: string, field: 'date' | 'hour' | 'minute', value: string, setter: (v: string) => void) => {
-      let d = currentIso ? new Date(currentIso) : new Date();
+      const d = currentIso ? new Date(currentIso) : new Date();
       if (!currentIso) d.setHours(9, 0, 0, 0);
       if (field === 'date') { const newDate = new Date(value); d.setFullYear(newDate.getFullYear(), newDate.getMonth(), newDate.getDate()); } 
       else if (field === 'hour') d.setHours(parseInt(value)); 
