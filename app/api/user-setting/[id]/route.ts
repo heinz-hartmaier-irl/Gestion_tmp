@@ -32,17 +32,18 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const targetId = parseInt(params.id, 10);
-  const cookieStore = await cookies();
-  const actorIdStr = cookieStore.get("userId")?.value;
-  const actorId = actorIdStr ? parseInt(actorIdStr, 10) : null;
 
-  if (!actorId) {
-    return NextResponse.json({ error: "Non connecté" }, { status: 401 });
-  }
+  const cookieStore = await cookies();
+  const currentUserIdStr = cookieStore.get("userId")?.value;
+  const actorId = currentUserIdStr ? parseInt(currentUserIdStr, 10) : null;
 
   const connection = await getDBConnection();
+
   try {
     const formData = await req.formData();
     const motif = formData.get("motif") as string | null;
@@ -60,6 +61,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const oldUser = currentRows[0] as { solde_conge: number; solde_hsup: number };
 
+    // Construction des mises à jour
     const updates: string[] = [];
     const values: (string | number)[] = [];
     const allowedFields = ["nom","prenom","mail","poste","solde_conge","solde_hsup","mdp","date_entree"];
@@ -128,11 +130,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       values.push(`/uploads/${fileName}`);
     }
 
+    // Update DB
     if (updates.length > 0) {
       await connection.query(`UPDATE user SET ${updates.join(", ")} WHERE id_user = ?`, [...values, targetId]);
     }
 
-    // Historique
+    // Historique conge
     if (Math.abs(diffConge) > 0.001) {
       await connection.query(
         `INSERT INTO historique_solde (id_user_target, id_user_actor, type_solde, valeur_modif, nouveau_solde, date_modif)
@@ -141,6 +144,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       );
     }
 
+    // Historique Hsup
     if (Math.abs(dureeReelleHsup) > 0.001) {
       await connection.query(
         `INSERT INTO historique_solde 
@@ -150,6 +154,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       );
     }
 
+    // Déconnexion si changement sensible
     let shouldLogout = false;
     if (actorId === targetId && sensitiveChanged) {
       const cStore = await cookies();
@@ -158,7 +163,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     return NextResponse.json({ success: true, logout: shouldLogout });
-
   } catch (err) {
     console.error(err);
     return NextResponse.json({ success: false, error: "Erreur serveur" }, { status: 500 });
@@ -166,3 +170,4 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     await connection.end();
   }
 }
+
