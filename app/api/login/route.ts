@@ -1,8 +1,23 @@
 import { NextResponse } from "next/server";
-import mysql from "mysql2/promise";
 import { getDBConnection } from "@/lib/db";
+import { RowDataPacket } from "mysql2";
+
+// Définition du type exact de la table user que l'on récupère
+interface UserRow extends RowDataPacket {
+  id_user: number;
+  nom: string;
+  prenom: string;
+  mail: string;
+  mdp: string;
+  solde_conge?: number;
+  solde_hsup?: number;
+  jours_conge_pris?: number;
+  photo?: string;
+}
 
 export async function POST(req: Request) {
+  const connection = await getDBConnection();
+
   try {
     const { email, password } = await req.json();
 
@@ -10,9 +25,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
 
-    const connection = await getDBConnection();
-
-    const [rows]: any = await connection.execute(
+    const [rows] = await connection.execute<UserRow[]>(
       "SELECT * FROM user WHERE mail = ? LIMIT 1",
       [email]
     );
@@ -41,7 +54,12 @@ export async function POST(req: Request) {
     });
 
     return res;
-  } catch (err) {
+  } catch (err: unknown) {
+    await connection.end();
+    if (err instanceof Error) {
+      console.error("Erreur API login :", err.message);
+      return NextResponse.json({ error: err.message }, { status: 500 });
+    }
     console.error("Erreur API login :", err);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }

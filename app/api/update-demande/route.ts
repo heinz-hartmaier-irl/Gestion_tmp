@@ -120,7 +120,7 @@ export async function POST(req: Request) {
     await conn.commit();
     return NextResponse.json({ success: true, message: isNewAcceptance ? "Demande acceptée et solde débité" : "Statut mis à jour" });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     await conn.rollback();
     console.error("Erreur API update-demande:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

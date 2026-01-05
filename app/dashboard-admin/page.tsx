@@ -112,16 +112,62 @@ export default function DashboardAdminPage() {
          <div className="lg:col-span-3">
             <div className="flex flex-wrap gap-3 mb-6 bg-white p-4 rounded-3xl shadow-sm border border-gray-100 items-center">
               <span className="text-xs font-bold text-[#000091] uppercase mr-2">Filtres :</span>
-              {["type","statut","nom","date"].map((f) => (
-                <select key={f} className="bg-gray-50 hover:bg-gray-100 border-none text-gray-600 text-xs font-bold rounded-xl outline-none py-3 px-4 transition cursor-pointer"
-                  value={(selectedFilters as any)[f]} onChange={(e) => setSelectedFilters({ ...selectedFilters, [f]: e.target.value })}>
-                  <option value="">{f.charAt(0).toUpperCase() + f.slice(1)}</option>
-                  {f === "type" && (filters.typesAll ?? []).map((t: any) => <option key={t} value={t}>{t}</option>)}
-                  {f === "statut" && filters.statuts?.map((s: any) => <option key={s.statut_demande} value={s.statut_demande}>{s.statut_demande}</option>)}
-                  {f === "nom" && filters.noms?.map((n: any) => <option key={n.nom} value={n.nom}>{n.nom}</option>)}
-                  {f === "date" && Array.from(new Set(filters.dates?.map((d: any) => `${String(new Date(d.date_demande).getMonth()+1).padStart(2,"0")}/${new Date(d.date_demande).getFullYear()}`) || [])).map((m: string) => <option key={m} value={m}>{m}</option>)}
-                </select>
-              ))}
+             {["type", "statut", "nom", "date"].map((f) => {
+                type FilterKey = "type" | "statut" | "nom" | "date";
+                const key = f as FilterKey;
+                return (
+                    <select
+                    key={f}
+                    className="bg-gray-50 hover:bg-gray-100 border-none text-gray-600 text-xs font-bold rounded-xl outline-none py-3 px-4 transition cursor-pointer"
+                    value={selectedFilters[key] || ""}
+                    onChange={(e) =>
+                        setSelectedFilters({
+                        ...selectedFilters,
+                        [key]: e.target.value,
+                        })
+                    }
+                    >
+                    <option value="">{f.charAt(0).toUpperCase() + f.slice(1)}</option>
+
+                    {key === "type" &&
+                        (filters.typesAll ?? []).map((t: string) => (
+                        <option key={t} value={t}>
+                            {t}
+                        </option>
+                        ))}
+                    {key === "statut" &&
+                        filters.statuts?.map((s) => (
+                        <option key={s.statut_demande} value={s.statut_demande}>
+                            {s.statut_demande}
+                        </option>
+                        ))}
+                    {key === "nom" &&
+                        filters.noms?.map((n) => (
+                        <option key={n.nom} value={n.nom}>
+                            {n.nom}
+                        </option>
+                        ))}
+                    {key === "date" &&
+                        Array.from(
+                        new Set(
+                            filters.dates
+                            ?.map(
+                                (d) =>
+                                `${String(new Date(d.date_demande).getMonth() + 1).padStart(
+                                    2,
+                                    "0"
+                                )}/${new Date(d.date_demande).getFullYear()}`
+                            )
+                            || []
+                        )
+                        ).map((m) => (
+                        <option key={m} value={m}>
+                            {m}
+                        </option>
+                        ))}
+                    </select>
+                );
+                })}
               {(selectedFilters.type || selectedFilters.statut || selectedFilters.nom || selectedFilters.date) && (
                   <button onClick={() => setSelectedFilters({ type: '', statut: '', nom: '', date: '' })} className="ml-auto text-xs text-red-400 font-bold hover:text-red-600 transition">Effacer ✕</button>
               )}

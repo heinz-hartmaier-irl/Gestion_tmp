@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
       await conn.commit();
       return NextResponse.json({ success: true, newVal, added: finalVariation });
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       await conn.rollback();
       throw err;
     } finally {

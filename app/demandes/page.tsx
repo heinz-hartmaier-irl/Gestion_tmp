@@ -10,9 +10,15 @@ const demandeTypes = [
   { value: "specifique", label: "Congé Spécifique" },
 ];
 
+interface User {
+  id_user: number;
+  poste?: string;
+}
+
+
 export default function DemandesPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [type, setType] = useState("");
@@ -61,7 +67,7 @@ export default function DemandesPage() {
     if (new Date(finalEndDate) <= new Date(finalStartDate)) return alert("Dates invalides.");
     const formData = new FormData();
     formData.append("type", type); formData.append("startDate", finalStartDate); formData.append("endDate", finalEndDate);
-    if (user?.id_user) formData.append("userId", user.id_user);
+    if (user?.id_user) formData.append("userId", String(user.id_user));
     if (type==="hsup" && justificatifText) formData.append("justificatifText", justificatifText);
     if ((type==="maladie"||type==="specifique") && justificatifFile) formData.append("justificatifFile", justificatifFile);
     if (type==="specifique") formData.append("nature", nature);

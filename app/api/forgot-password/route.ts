@@ -1,18 +1,25 @@
 import { NextResponse } from "next/server";
-import mysql from "mysql2/promise";
 import { getDBConnection } from "@/lib/db";
+import { RowDataPacket } from "mysql2";
+
+interface UserRow extends RowDataPacket {
+  id_user: number;
+  nom: string;
+  prenom: string;
+  mail: string;
+}
 
 export async function POST(req: Request) {
+  const connection = await getDBConnection();
+
   try {
     const { email } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: "Email requis" }, { status: 400 });
     }
-    
-    const connection = await getDBConnection();
 
-    const [rows]: any = await connection.execute(
+    const [rows] = await connection.execute<UserRow[]>(
       "SELECT id_user, nom, prenom, mail FROM user WHERE mail = ? LIMIT 1",
       [email]
     );
@@ -29,7 +36,12 @@ export async function POST(req: Request) {
       message: "Si cet email existe, un lien de réinitialisation a été envoyé."
     }, { status: 200 });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
+    await connection.end();
+    if (err instanceof Error) {
+      console.error("Erreur API forgot-password :", err.message);
+      return NextResponse.json({ error: err.message }, { status: 500 });
+    }
     console.error("Erreur API forgot-password :", err);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
