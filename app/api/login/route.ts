@@ -30,8 +30,6 @@ export async function POST(req: Request) {
       [email]
     );
 
-    await connection.end();
-
     if (rows.length === 0) {
       return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });
     }
@@ -55,7 +53,6 @@ export async function POST(req: Request) {
 
     return res;
   } catch (err: unknown) {
-    await connection.end();
     if (err instanceof Error) {
       console.error("Erreur API login :", err.message);
       return NextResponse.json({ error: err.message }, { status: 500 });

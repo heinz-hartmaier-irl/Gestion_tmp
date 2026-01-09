@@ -57,8 +57,6 @@ export async function GET() {
       [userId]
     );
 
-    await connection.end();
-
     if (rows.length === 0) {
       return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });
     }
