@@ -34,8 +34,6 @@ export async function DELETE(
   } catch (err) {
     console.error(err);
     return NextResponse.json({ success: false, error: "Erreur suppression" }, { status: 500 });
-  } finally {
-    await connection.end();
   }
 }
 
