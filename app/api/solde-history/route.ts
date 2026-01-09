@@ -25,7 +25,5 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-  } finally {
-    await conn.end();
   }
 }

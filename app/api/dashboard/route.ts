@@ -70,7 +70,5 @@ export async function GET() {
   } catch (error) {
     console.error('Erreur /api/dashboard:', error);
     return NextResponse.error();
-  } finally {
-    await conn.end();
   }
 }

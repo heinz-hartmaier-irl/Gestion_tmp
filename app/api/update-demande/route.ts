@@ -124,7 +124,5 @@ export async function POST(req: Request) {
     await conn.rollback();
     console.error("Erreur API update-demande:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-  } finally {
-    await conn.end();
   }
 }

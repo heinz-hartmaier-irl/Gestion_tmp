@@ -122,7 +122,5 @@ export async function POST(req: NextRequest) {
     }
     console.error(err);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-  } finally {
-    await connection.end();
   }
 }

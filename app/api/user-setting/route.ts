@@ -39,9 +39,7 @@ export async function GET() {
   } catch (error) {
     console.error("Erreur GET users:", error);
     return NextResponse.json({ success: false, error: "Erreur serveur" }, { status: 500 });
-  } finally {
-    await connection.end();
-  }
+  } 
 }
 
 // POST : ajouter un utilisateur
@@ -95,7 +93,5 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Erreur POST user-setting :", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-  } finally {
-    await connection.end();
-  }
+  } 
 }

@@ -176,7 +176,5 @@ export async function PATCH(
   } catch (err) {
     console.error(err);
     return NextResponse.json({ success: false, error: "Erreur serveur" }, { status: 500 });
-  } finally {
-    await connection.end();
-  }
+  } 
 }

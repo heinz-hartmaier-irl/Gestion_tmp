@@ -78,10 +78,7 @@ export async function POST(req: NextRequest) {
     } catch (err: unknown) {
       await conn.rollback();
       throw err;
-    } finally {
-      await conn.end();
-    }
-
+    } 
   } catch (error) {
     console.error("Erreur update-solde:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
