@@ -7,8 +7,15 @@ import { cookies } from "next/headers";
 import { RowDataPacket } from "mysql2";
 import { calculateRecoveryHours } from "@/lib/overtimeUtils";
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const targetId = parseInt(params.id, 10);
+// --- CORRECTION DU TYPE DE PARAMS (Promise) ---
+export async function DELETE(
+  req: NextRequest, 
+  { params }: { params: Promise<{ id: string }> } // <-- params est maintenant une Promise
+) {
+  // --- AWAIT PARAMS ---
+  const { id } = await params; 
+  const targetId = parseInt(id, 10);
+
   const cookieStore = await cookies();
   const currentUserIdStr = cookieStore.get("userId")?.value;
   const currentUserId = currentUserIdStr ? parseInt(currentUserIdStr, 10) : null;
@@ -32,11 +39,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 }
 
+
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } 
 ) {
-  const targetId = parseInt(params.id, 10);
+
+  const { id } = await params;
+  const targetId = parseInt(id, 10);
 
   const cookieStore = await cookies();
   const currentUserIdStr = cookieStore.get("userId")?.value;
@@ -170,4 +180,3 @@ export async function PATCH(
     await connection.end();
   }
 }
-
